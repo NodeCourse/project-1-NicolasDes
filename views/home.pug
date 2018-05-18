@@ -1,6 +1,26 @@
 if user
     h1 Welcome #{user.username} !
     a(href="/login") Log out
+    a(href="/com") Nouveau commentaire
+    h1 COMMENTAIRE
+
+    for review in reviews
+        h3 Jeu:
+        review #{review.game}
+        br
+        h3 Description
+        review #{review.description}
+        br
+        for comment in review.comments
+            h3 commentaire
+            comment #{comment.avis}
+        form(action='/comment/' + review.id, method='post' )
+            div
+                label(for='avis') Commentaire
+                input(id='avis' name='avis')
+                input(type='submit')
+
+
 else
     p Please log in.
     a(href="/login") Log in

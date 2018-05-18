@@ -23,6 +23,19 @@ const User = db.define('user', {
     password : { type: Sequelize.STRING }
 });
 
+const Review = db.define('review', {
+    game : { type: Sequelize.STRING } ,
+    description : { type: Sequelize.STRING }
+});
+
+const Comment = db.define('comment', {
+    avis: { type: Sequelize.STRING },
+});
+
+Review.hasMany(Comment);
+Comment.belongsTo(Review);
+
+
 db.sync().then(r => {
     console.log("DB SYNCED");
 }).catch(e => {
@@ -90,13 +103,23 @@ app.use(passport.session());
 
 
 app.get('/', (req, res) => {
-    User.findAll().then((users) => {
-        res.render('home', {
-            users: users,
-            user: req.user
+    if (req.user) {
+        Review.findAll({include:[Comment]}).then((reviews) => {
+            res.render('home', {
+                reviews: reviews,
+                user: req.user
+            });
         });
-    });
 
+
+
+    } else {
+        User.findAll().then((users) => {
+            res.render('home', {
+                users: users
+            });
+        });
+    }
 });
 
 
@@ -117,6 +140,28 @@ app.post('/login',
         failureRedirect: '/login'
     })
 );
+app.get('/com', (req, res) => {
+    // Render the login page
+    res.render('com');
+});
+
+app.post('/com', (req, res) => {
+    const game = req.body.game;
+    const description = req.body.description;
+    Review
+        .create({
+            game: game,
+            description: description
+        })
+        .then((review) => {
+            req.login(review, () => {
+                res.redirect('/');
+            })
+        })
+});
+
+
+
 
 app.get('/inscription', (req, res) => {
     // Render the login page
@@ -138,11 +183,25 @@ app.post('/inscription', (req, res) => {
         })
 });
 
+app.get('/comment',(req,res) => {
+    res.render('comment');
+});
+
+app.post('/comment/:reviewId', (req, res) => {
+    const { avis } = req.body;
+    Comment
+        .sync()
+        .then(() => Comment.create({ avis, reviewId: req.params.reviewId, userId: req.user.id }))
+        .then(() => res.redirect('/'));
+});
+
 
 
 app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/login');
 });
+
+
 
 app.listen(3000);
