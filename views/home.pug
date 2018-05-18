@@ -1,0 +1,11 @@
+if user
+    h1 Welcome #{user.username} !
+    a(href="/login") Log out
+else
+    p Please log in.
+    a(href="/login") Log in
+    p Ou inscris toi !
+    a(href="/inscription") Inscrivez-Vous
+
+    for user in users
+        user #{user.username}
